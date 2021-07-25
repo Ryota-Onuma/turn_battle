@@ -1,48 +1,59 @@
-const path = require('path')
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const path = require("path");
+
 module.exports = {
-  mode: 'production',
-  entry: './main.js',
+  mode: "production",
+  entry: path.resolve(__dirname, "src/main.jsx"),
   output: {
     // 出力先のディレクトリ
-    path: path.resolve(__dirname, './dist'),
-    // 出力ファイル名
-    filename: 'bundle.js',
-    publicPath: '/',
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "./dist"),
+  },
+  devServer: {
+    compress: true,
+    contentBase: path.join(__dirname, "dist"),
+    watchContentBase: true,
+    hot: true,
+    port: 3500,
   },
   module: {
     rules: [
       {
-        test: /\.vue$/,
-        loader: 'vue-loader',
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env", "@babel/react"],
+          },
+        },
       },
       {
-        test: /\.js$/,
-        loader: 'babel-loader',
-      },
-      {
-        test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
-      },
-      {
-        test: /\.css$/,
-        use: ['vue-style-loader', 'style-loader', 'css-loader'],
-      },
-      {
-        test: /\.(ico|svg|jpe?g|png|webp)$/,
-        type: 'asset/resource',
+        test: /\.scss/, // 対象となるファイルの拡張子
+        use: [
+          // linkタグに出力する機能
+          "style-loader",
+          // CSSをバンドルするための機能
+          {
+            loader: "css-loader",
+            options: {
+              // オプションでCSS内のurl()メソッドの取り込みを禁止する
+              url: false,
+              // 0 => no loaders (default);
+              // 1 => postcss-loader;
+              // 2 => postcss-loader, sass-loader
+              importLoaders: 2,
+            },
+          },
+          {
+            loader: "sass-loader",
+          },
+        ],
       },
     ],
   },
-  target: ['web', 'es5'],
+  target: ["web", "es5"],
+  devtool: "inline-source-map",
   resolve: {
-    // import './foo.vue' の代わりに import './foo' と書けるようになる(拡張子省略)
-    extensions: ['.js', '.vue'],
-    alias: {
-      // vue-template-compilerに読ませてコンパイルするために必要
-      vue$: 'vue/dist/vue.esm.js',
-    },
+    extensions: [".js", ".jsx"],
   },
-  plugins: [new CleanWebpackPlugin(), new VueLoaderPlugin()],
-}
+};

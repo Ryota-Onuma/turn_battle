@@ -11,11 +11,9 @@ services:
     build:
       context: ./rails # Dockerfileのあるディレクトリ
       dockerfile: Dockerfile.dev # 開発環境用
-    command: bundle exec puma -C config/puma.rb 
+    command: rails server -b 0.0.0.0 -p 3000
     volumes:
       - ./rails:/app
-      # socketファイルの共有
-      - sockets:/app/tmp/sockets/
     ports:
       - "3000:3000"
     depends_on:
@@ -24,27 +22,13 @@ services:
     build: 
       context: ./rails/frontend # Dockerfileのあるディレクトリ
       dockerfile: Dockerfile.dev # 開発環境用
-    command: npm run serve
+    command: npm run start
     working_dir: "/app/frontend"
     volumes:
       - ./rails/frontend:/app/frontend
-      - /app/frontend/node_modules
     ports:
       - "3500:3500"
     depends_on:
       - app
-  nginx:
-    build:
-      context: ./nginx
-    ports:
-      - '80:80'
-      #socketファイルの共有
-    environment:
-      SERVER_NAME: 'localhost'
-    volumes: 
-      - sockets:/app/tmp/sockets/
-    depends_on: 
-      - app
 volumes:
   postgres-data:
-  sockets:
