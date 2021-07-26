@@ -12,22 +12,31 @@
     padding: 40px;
     z-index: 1;
     min-width: 600px;
-    #notify-area {
-      position: absolute;
-      top:0;
-      z-index: 2;
-      padding: 10px;
-      min-width: 600px;
-      text-align: center;
-      #clear {
-        color: skyblue;
+    #image-and-notify-area{
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      #img-container{
+        margin: 30px 0;
       }
-      #invalid-key {
-        color: red;
+      #notify-area {
+        min-width: 300px;
+        text-align: center;
+        margin-left: 50px;
+        #clear {
+          color: skyblue;
+          background-color: white;
+          line-height: 2rem; 
+          border-radius: 10px;
+        }
+        #invalid-key {
+          color: red;
+          background-color: white;
+          line-height: 2rem;
+          border-radius: 10px;
+        }
       }
-    }
-    #img-container{
-      margin: 30px 0;
     }
     #odai {
       font-size: 2rem;

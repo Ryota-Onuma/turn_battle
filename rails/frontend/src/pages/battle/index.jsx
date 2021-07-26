@@ -115,12 +115,14 @@ const Battle = () => {
   return (
     <section id="battle">
       <div id="area">
-        <div id="notify-area">
-          <div id="clear">{is_clear && !invalid_key ? "クリアー！！🙌" : ""}</div>
-          <div id="invalid-key">{invalid_key ? "間違ったキーを押してるだぬ" : ""}</div>
-        </div>
-        <div id="img-container">
-          { renderImage(Kawauso) }
+        <div id="image-and-notify-area">
+          <div id="img-container">
+            { renderImage(Kawauso) }
+          </div>
+          <div id="notify-area">
+            <div id="clear">{is_clear && !invalid_key ? "クリアー！！🙌" : ""}</div>
+            <div id="invalid-key">{invalid_key ? "間違ったキーを押してるだぬ" : ""}</div>
+          </div>
         </div>
         <div id="odai">{odai.full_content}</div>
         <div id="condition">
