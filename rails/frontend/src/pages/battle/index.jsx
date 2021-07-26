@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { generateRomanWords } from "../../plugins/battle/convert"
+import { renderImage } from "../../components/common"
 import "../../stylesheets/battle/battle.scss";
+import Kawauso from "../../images/kawauso.png"
 const Battle = () => {
   const [valid_text, setValidText] = useState([]);
   const [invalid_text, setInValidText] = useState([]);
@@ -8,12 +10,12 @@ const Battle = () => {
   const [invalid_key, setInValidKey] = useState(false);
   const odai_list = [
     {
-      full_content: "あやの",
-      roma_contents: generateRomanWords("あやの")
+      full_content: "となりのきゃくはよくかきくうきゃくだ",
+      roma_contents: generateRomanWords("となりのきゃくはよくかきくうきゃくだ")
     },
     {
-      full_content: "りょうた",
-      roma_contents: generateRomanWords("りょうた")
+      full_content: "くうねるところにすむところ",
+      roma_contents: generateRomanWords("くうねるところにすむところ")
     },
     {
       full_content: "あんずるよりうむがやすし",
@@ -116,6 +118,9 @@ const Battle = () => {
         <div id="notify-area">
           <div id="clear">{is_clear && !invalid_key ? "クリアー！！🙌" : ""}</div>
           <div id="invalid-key">{invalid_key ? "間違ったキーを押してるだぬ" : ""}</div>
+        </div>
+        <div id="img-container">
+          { renderImage(Kawauso) }
         </div>
         <div id="odai">{odai.full_content}</div>
         <div id="condition">
