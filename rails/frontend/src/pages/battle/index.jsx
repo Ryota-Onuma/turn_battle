@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { kanaToRoman } from "../../plugins/battle/convert"
+import { generateRomanWords } from "../../plugins/battle/convert"
 import "../../stylesheets/battle/battle.scss";
 const Battle = () => {
   const [valid_text, setValidText] = useState([]);
@@ -9,19 +9,19 @@ const Battle = () => {
   const odai_list = [
     {
       full_content: "あやの",
-      roma_content: "ayanonakajima" 
+      roma_contents: generateRomanWords("あやの")
     },
     {
       full_content: "りょうた",
-      roma_content: "ryotaonuma" 
+      roma_contents: generateRomanWords("りょうた")
     },
     {
       full_content: "あんずるよりうむがやすし",
-      roma_content: "annzuruyoriumugayasushi" 
+      roma_contents: generateRomanWords("あんずるよりうむがやすし")
     },
     {
       full_content: "いしばしをたたいてわたる",
-      roma_content: "ishibashiwotataitewataru" 
+      roma_contents: generateRomanWords("いしばしをたたいてわたる")
     },
   ];
   const [odai_index, setOdaiIndex] = useState(0);
@@ -42,22 +42,22 @@ const Battle = () => {
 
   useEffect(() => {
     setOdai(odai_list[odai_index_ref.current]);
-    setInValidText(odai_list[odai_index_ref.current].roma_content.split(""));
+    setInValidText(odai_list[odai_index_ref.current].roma_contents[0]);
     setValidText([]);
   }, [odai_index]);
 
   const handleTyping = (e) => {
     if (checkPushedKey(e.key)) return
-    const spilited_odai = odai_ref.current.roma_content.split(""); // ["h","o","g","e"]
-    const valid_text_copy = [...valid_text_ref.current.slice(), e.key];
-  
-    if (spilited_odai[valid_text_copy.length - 1] === valid_text_copy[valid_text_copy.length - 1]) {
+    
+    const usable_roma_str = checkValidInput([...valid_text_ref.current, e.key].join(""))
+
+    if ( usable_roma_str) {
       setInValidKey(false);
       setIsClear(false);
-      setValidText(valid_text_copy);
-      spilited_odai.splice(0, valid_text_copy.length);
-      setInValidText(spilited_odai);
-      if (spilited_odai.length === 0) {
+      setValidText([...valid_text_ref.current, e.key].join(""));
+      let invalid =  usable_roma_str.slice(valid_text_ref.current.length)
+      setInValidText(invalid);
+      if (invalid.length === 0) {
         setInValidKey(false);
         nextOdai();
       }
@@ -77,16 +77,32 @@ const Battle = () => {
     }
   };
 
-  const shuffle = ([...array]) => {
-    for (let i = array.length - 1; i >= 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+  const checkValidInput = (text) => {
+    const inputed_text = text.split("")
+    let content = null
+    let should_stop = false
+    let should_skip = false
+   
+    odai_ref.current.roma_contents.forEach((roma_content,i)=> {
+      inputed_text.forEach((char,k) => {
+        // 入力された文字列がローマ字並びに一致しなかったら、スキップフラグをたてる
+        if (char !== roma_content.split("")[k]) should_skip = true
+      })
+      if(should_skip) {
+        // 他のローマ字並びに一致するかを確かめるため、次のループへ
+        should_skip = false
+        return
+      }
+      if (!should_skip && !should_stop) {
+        // 入力された文字列がローマ字並びに一致している場合は以後のループをしなくていいため
+        content = roma_content
+        should_stop  = true
+      }
+    })
+    return content
   }
 
   const checkPushedKey = (key) => {
-    console.log(key)
     if (key !== "Shift" && key !== "Meta") {
       return  false
     } else {
@@ -102,7 +118,6 @@ const Battle = () => {
           <div id="invalid-key">{invalid_key ? "間違ったキーを押してるだぬ" : ""}</div>
         </div>
         <div id="odai">{odai.full_content}</div>
-        <div>{kanaToRoman(odai.full_content)}</div>
         <div id="condition">
           <span id="valid">{valid_text}</span>
           <span id="invalid">{invalid_text}</span>
