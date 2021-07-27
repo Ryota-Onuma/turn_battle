@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { generateRomanWords } from "../../plugins/battle/convert"
 import { renderImage } from "../../components/common"
+import { renderBar } from "../../components/render-bar"
 import "../../stylesheets/battle/battle.scss";
 import Kawauso from "../../images/kawauso.png"
+import { renderStatus }  from "../../components/battle/status"
 const Battle = () => {
+  const [count, setCount] = useState(0);
   const [valid_text, setValidText] = useState([]);
   const [invalid_text, setInValidText] = useState([]);
   const [is_clear, setIsClear] = useState(false);
@@ -38,6 +41,10 @@ const Battle = () => {
   const odai_ref = useRef(); 
   odai_ref.current = odai; 
 
+
+  const count_ref = useRef(); 
+  count_ref.current = count; 
+
   useEffect(() => {
     document.addEventListener("keydown", handleTyping, false);
   }, []);
@@ -46,6 +53,9 @@ const Battle = () => {
     setOdai(odai_list[odai_index_ref.current]);
     setInValidText(odai_list[odai_index_ref.current].roma_contents[0]);
     setValidText([]);
+    setCount(0)
+    const timer = setInterval(() => { countDown() },100)
+    return function(){ clearInterval(timer) };
   }, [odai_index]);
 
   const handleTyping = (e) => {
@@ -112,9 +122,28 @@ const Battle = () => {
     }
   }
 
+  const countDown = () => {
+    if(count_ref.current  < 100 && !is_clear) {
+      setCount(count_ref.current + 1)
+    } else {
+      setInValidKey(false);
+      if(odai_index_ref.current < odai_list.length - 1) {
+        setOdaiIndex(odai_index_ref.current + 1);
+      }
+    }
+   
+  }
+
   return (
     <section id="battle">
-      <div id="area">
+      <div id="status">
+        { renderStatus() }
+      </div>
+      <div id="not-status">
+      <div id="bar">
+          { renderBar(count) }
+        </div>
+      <div id="area"> 
         <div id="image-and-notify-area">
           <div id="img-container">
             { renderImage(Kawauso) }
@@ -128,6 +157,7 @@ const Battle = () => {
         <div id="condition">
           <span id="valid">{valid_text}</span>
           <span id="invalid">{invalid_text}</span>
+        </div>
         </div>
       </div>
     </section>
