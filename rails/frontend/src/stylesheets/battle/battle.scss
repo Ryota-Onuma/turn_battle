@@ -1,61 +1,89 @@
 
 #battle {
   display: flex;
-  flex-direction:　row;
-  align-items: center;
+  flex-direction: row;
+  align-items: flex-start;
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  #not-status{
-
-    #bar { 
-      width: 400px;
-      margin: 30px 0;
-      .progress-bar{
-        background-color: blue;
-        height: 30px;
-      }
-      .progress{
-        background-color: white;
-        height: 30px;
-      }
-    }
-  #area {
-    position: relative;
-    border: 4px solid white;
-    padding: 40px;
-    z-index: 1;
-    min-width: 600px;
-
-
-
-    #image-and-notify-area{
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      #img-container{
-        margin: 30px 0;
-      }
-      #notify-area {
-        min-width: 300px;
-        text-align: center;
-        margin-left: 50px;
-        #clear {
-          color: skyblue;
-          background-color: white;
-          line-height: 2rem; 
-          border-radius: 10px;
-        }
-        #invalid-key {
-          color: red;
-          background-color: white;
-          line-height: 2rem;
-          border-radius: 10px;
-        }
-      }
-    }    
+  padding-top: 80px;
+  box-sizing: border-box;
+  #status{
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content:flex-start;
+    margin-right: 70px;
+    padding: 30px;
+    box-sizing: border-box;
+    margin-top: 61px;
   }
+  #not-status{
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    position: relative;
+    #area {
+      border: 4px solid white;
+      padding: 20px;
+      width: 800px;
+      box-sizing: border-box;
+      position: relative;
+      #timer-container{
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        position: absolute;
+        right: 20px;
+        #bar { 
+          width: 200px;
+          margin-bottom:30px;
+          .progress-bar{
+            background-color: blue;
+            height: 20px;
+          }
+          .progress{
+            background-color: white;
+            height: 20px;
+          }
+        }
+      }
+      #image-and-notify-area{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        #img-container{
+          margin: 30px 0;
+        }
+        #notify-area {
+          min-width: 300px;
+          text-align: center;
+          margin-left: 50px;
+          #clear {
+            color: skyblue;
+            background-color: white;
+            line-height: 2rem; 
+            border-radius: 10px;
+          }
+          #game-over {
+            color: white;
+            background-color: red;
+            line-height: 2rem; 
+            border-radius: 10px;
+          }
+          #invalid-key {
+            color: black;
+            background-color: yellow;
+            line-height: 2rem;
+            border-radius: 10px;
+          }
+        }
+      }    
+    }
     #odai {
       font-size: 2rem;
     }

@@ -1,0 +1,15 @@
+#battle-announce{
+  padding: 30px;
+  width: 800px;
+  box-sizing: border-box;
+  border: 4px solid white;
+  margin-top: 30px;
+  height: 200px;
+  overflow-y: auto;
+  .battle-message{
+    width: 100%;
+    font-size: 1rem;
+    margin: 2px 0;
+    color: white;
+  }
+}

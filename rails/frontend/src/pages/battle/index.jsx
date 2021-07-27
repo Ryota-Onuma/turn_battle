@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import Announce from "../../components/battle/announce"
 import { generateRomanWords } from "../../plugins/battle/convert"
 import { renderImage } from "../../components/common"
 import { renderBar } from "../../components/render-bar"
@@ -6,11 +7,8 @@ import "../../stylesheets/battle/battle.scss";
 import Kawauso from "../../images/kawauso.png"
 import { renderStatus }  from "../../components/battle/status"
 const Battle = () => {
-  const [count, setCount] = useState(0);
-  const [valid_text, setValidText] = useState([]);
-  const [invalid_text, setInValidText] = useState([]);
-  const [is_clear, setIsClear] = useState(false);
-  const [invalid_key, setInValidKey] = useState(false);
+  const [IN_BATTLE, CLEARED, GAME_OVER] = [1,2,3]
+  const name = "礼乃ン"
   const odai_list = [
     {
       full_content: "となりのきゃくはよくかきくうきゃくだ",
@@ -29,11 +27,26 @@ const Battle = () => {
       roma_contents: generateRomanWords("いしばしをたたいてわたる")
     },
   ];
+
+  const [messages, setMessages] = useState([
+    "カワウソが現れた。",
+    name + "はどうする"
+  ]);
+
+  const [count, setCount] = useState(0);
+  const [valid_text, setValidText] = useState([]);
+  const [invalid_text, setInValidText] = useState([]);
+  const [result, setResult] = useState(IN_BATTLE); // 1 = 戦闘中  2 = 勝利  3 = 敗北
+  const [invalid_key, setInValidKey] = useState(false);
+  const [hp, setHP] = useState(100)
   const [odai_index, setOdaiIndex] = useState(0);
   const [odai, setOdai] = useState(odai_list[odai_index]);
 
   const valid_text_ref = useRef();
   valid_text_ref.current = valid_text; 
+
+  const messages_ref = useRef()
+  messages_ref.current = messages
 
   const odai_index_ref = useRef();
   odai_index_ref.current = odai_index; 
@@ -41,31 +54,40 @@ const Battle = () => {
   const odai_ref = useRef(); 
   odai_ref.current = odai; 
 
+  const hp_ref = useRef();
+  hp_ref.current = hp; 
 
   const count_ref = useRef(); 
   count_ref.current = count; 
 
+  const result_ref = useRef()
+  result_ref.current = result
+
   useEffect(() => {
     document.addEventListener("keydown", handleTyping, false);
   }, []);
-
   useEffect(() => {
     setOdai(odai_list[odai_index_ref.current]);
     setInValidText(odai_list[odai_index_ref.current].roma_contents[0]);
     setValidText([]);
+    if(count_ref.current >= 100) drainHp(20)
     setCount(0)
     const timer = setInterval(() => { countDown() },100)
-    return function(){ clearInterval(timer) };
-  }, [odai_index]);
+    return () => clearInterval(timer) 
+  }, [odai_index, result]);
+
+  useEffect(() => {
+    if(hp <= 0) {
+      setResult(GAME_OVER);
+    }
+  }, [hp]);
 
   const handleTyping = (e) => {
-    if (checkPushedKey(e.key)) return
+    if (checkPushedKey(e.key) || cleard() || gameOvered()) return
     
     const usable_roma_str = checkValidInput([...valid_text_ref.current, e.key].join(""))
-
-    if ( usable_roma_str) {
+    if (usable_roma_str) {
       setInValidKey(false);
-      setIsClear(false);
       setValidText([...valid_text_ref.current, e.key].join(""));
       let invalid =  usable_roma_str.slice(valid_text_ref.current.length)
       setInValidText(invalid);
@@ -74,7 +96,7 @@ const Battle = () => {
         nextOdai();
       }
     } else {
-      setIsClear(false);
+      drainHp(10)
       setInValidKey(true);
     }
   };
@@ -85,7 +107,7 @@ const Battle = () => {
       setOdaiIndex(odai_index_ref.current + 1);
     } else {
       setInValidKey(false);
-      setIsClear(true);
+      setResult(CLEARED);
     }
   };
 
@@ -123,41 +145,83 @@ const Battle = () => {
   }
 
   const countDown = () => {
-    if(count_ref.current  < 100 && !is_clear) {
+    if(count_ref.current  < 100 && inBattle()) {
       setCount(count_ref.current + 1)
     } else {
       setInValidKey(false);
-      if(odai_index_ref.current < odai_list.length - 1) {
+      if(odai_index_ref.current < odai_list.length - 1 && !gameOvered()) {
         setOdaiIndex(odai_index_ref.current + 1);
+      } else {
+        setGameOver()
       }
     }
-   
+  }
+
+  const inBattle = () => {
+    return result_ref.current === IN_BATTLE
+  }
+  const cleard = () => {
+    return result_ref.current === CLEARED
+  }
+
+  const gameOvered = () => {
+    return result_ref.current === GAME_OVER
+  }
+  const setGameOver = () => {
+    if(!cleard()) {
+      setResult(GAME_OVER);
+    }
+  }
+  const renderGameStatus = () => {
+    if(cleard() && !invalid_key){
+      return  <div id="clear">クリアー！！🙌</div>
+    }else if(gameOvered() && !invalid_key) {
+      return  <div id="game-over">GAME OVER</div>
+    }
+  }
+
+  const drainHp = (drain_hp_value) => {
+    const drain_result = hp_ref.current - drain_hp_value
+    if(drain_result >= 1) {
+      const new_messages = [...messages_ref.current, name + 'は' + drain_hp_value + 'ダメージを受けた'] 
+      setMessages(new_messages)
+      setHP(hp_ref.current - drain_hp_value)
+    } else {
+      console.log('aaa')
+      const new_messages = [...messages_ref.current, name + "はやられてしまった"] 
+      setMessages(new_messages)
+      setHP(0)
+      return
+    }
   }
 
   return (
     <section id="battle">
       <div id="status">
-        { renderStatus() }
+        { renderStatus(hp,name) }
       </div>
       <div id="not-status">
-      <div id="bar">
-          { renderBar(count) }
+        <div id="area"> 
+        <div id="timer-container">
+        { inBattle() ? <div id="bar"> { renderBar(count) } </div> : "" }
         </div>
-      <div id="area"> 
-        <div id="image-and-notify-area">
-          <div id="img-container">
-            { renderImage(Kawauso) }
+          <div id="image-and-notify-area">
+            <div id="img-container">
+              { renderImage(Kawauso) }
+            </div>
+            <div id="notify-area">
+              <div id="clear">{ renderGameStatus() }</div>
+              <div id="invalid-key">{invalid_key && inBattle() ? "間違ったキーを押してるだぬ" : ""}</div>
+            </div>
           </div>
-          <div id="notify-area">
-            <div id="clear">{is_clear && !invalid_key ? "クリアー！！🙌" : ""}</div>
-            <div id="invalid-key">{invalid_key ? "間違ったキーを押してるだぬ" : ""}</div>
+          <div id="odai">{odai.full_content}</div>
+          <div id="condition">
+            <span id="valid">{valid_text}</span>
+            <span id="invalid">{invalid_text}</span>
           </div>
         </div>
-        <div id="odai">{odai.full_content}</div>
-        <div id="condition">
-          <span id="valid">{valid_text}</span>
-          <span id="invalid">{invalid_text}</span>
-        </div>
+        <div id="announce-container">
+          <Announce messages={messages_ref.current} name={name}/>
         </div>
       </div>
     </section>
