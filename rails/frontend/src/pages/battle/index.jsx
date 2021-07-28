@@ -1,32 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import Announce from "../../components/battle/announce"
-import { generateRomanWords } from "../../plugins/battle/convert"
+import { odai_list } from "../../utilities/odai_list";
 import { renderImage } from "../../components/common"
 import { renderBar } from "../../components/render-bar"
 import "../../stylesheets/battle/battle.scss";
 import Kawauso from "../../images/kawauso.png"
 import { renderStatus }  from "../../components/battle/status"
+
 const Battle = () => {
   const [IN_BATTLE, CLEARED, GAME_OVER] = [1,2,3]
-  const name = "礼乃ン"
-  const odai_list = [
-    {
-      full_content: "となりのきゃくはよくかきくうきゃくだ",
-      roma_contents: generateRomanWords("となりのきゃくはよくかきくうきゃくだ")
-    },
-    {
-      full_content: "くうねるところにすむところ",
-      roma_contents: generateRomanWords("くうねるところにすむところ")
-    },
-    {
-      full_content: "あんずるよりうむがやすし",
-      roma_contents: generateRomanWords("あんずるよりうむがやすし")
-    },
-    {
-      full_content: "いしばしをたたいてわたる",
-      roma_contents: generateRomanWords("いしばしをたたいてわたる")
-    },
-  ];
+  const name = "西塚"
 
   const [messages, setMessages] = useState([
     "カワウソが現れた。",
@@ -66,6 +49,7 @@ const Battle = () => {
   useEffect(() => {
     document.addEventListener("keydown", handleTyping, false);
   }, []);
+  
   useEffect(() => {
     setOdai(odai_list[odai_index_ref.current]);
     setInValidText(odai_list[odai_index_ref.current].roma_contents[0]);
