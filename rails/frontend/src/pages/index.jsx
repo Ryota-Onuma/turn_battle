@@ -1,11 +1,14 @@
 import React from "react";
 import Battle from "./battle/index";
 import "../stylesheets/common/application.scss"
+import { Provider } from '../stores/store'
 const Index = () => {
   return (
-    <main>
-      <Battle />
-    </main>
+    <Provider>
+      <main>
+        <Battle />
+      </main>
+    </Provider>
   );
 };
 
