@@ -5,12 +5,12 @@ import { renderImage } from "../../components/common"
 import { renderBar } from "../../components/render-bar"
 import "../../stylesheets/battle/battle.scss";
 import Kawauso from "../../images/kawauso.png"
-import { renderStatus, inBattle, cleard, gameOvered , setGameOver }  from "../../components/battle/status"
+import { renderStatus }  from "../../components/battle/status"
 import { Store } from '../../stores/store'
 
 const Battle = () => {
   const {state, dispatch} = useContext(Store)  
-  const [IN_BATTLE, CLEARED, GAME_OVER] = [1,2,3]
+  const [IN_BATTLE, CLEARED, GAME_OVER, NOT_IN_BATTLE] = [1,2,3,4]
   const [messages, setMessages] = useState([]);
 
   const [count, setCount] = useState(0);
@@ -19,7 +19,7 @@ const Battle = () => {
   const [invalid_key, setInValidKey] = useState(false);
   const [odai_index, setOdaiIndex] = useState(0);
   const [odai, setOdai] = useState(odai_list[odai_index]);
-  const [result, setResult] = useState(IN_BATTLE,);
+  const [result, setResult] = useState(IN_BATTLE);
 
   const valid_text_ref = useRef();
   valid_text_ref.current = valid_text; 
@@ -39,12 +39,17 @@ const Battle = () => {
   const count_ref = useRef(); 
   count_ref.current = count; 
 
-  const name_ref = useRef(); 
-  name_ref.current = state.user.name 
+  const user_ref = useRef(); 
+  user_ref.current = state.user
+
+  const battle_status_ref = useRef(); 
+  battle_status_ref.current = state.battle_status
+
 
   useEffect(() => {
     document.addEventListener("keydown", handleTyping, false);
     dispatch({ type : 'setName' , name: "アヤノ"})
+    dispatch({ type : 'setBattleStatus' , battle_status: IN_BATTLE})
   }, []);
   
   useEffect(() => {
@@ -55,13 +60,13 @@ const Battle = () => {
     setCount(0)
     const timer = setInterval(() => { countDown() },100)
     return () => clearInterval(timer) 
-  }, [odai_index, result,state.user.name]);
+  }, [odai_index, result]);
 
   useEffect(() => {
-    if(state.user.hp <= 0) {
+    if(user_ref.current.hp <= 0) {
       setResult(GAME_OVER);
     }
-  }, [state.user.hp]);
+  }, [user_ref.current.hp]);
 
   const handleTyping = (e) => {
     if (checkPushedKey(e.key) || cleard() || gameOvered()) return
@@ -125,11 +130,12 @@ const Battle = () => {
   }
 
   const countDown = () => {
+    console.log(inBattle())
     if(count_ref.current  < 100 && inBattle()) {
       setCount(count_ref.current + 1)
     } else {
       setInValidKey(false);
-      if(odai_index_ref.current < odai_list.length - 1 && !gameOvered()) {
+      if(count_ref.current === 100 && odai_index_ref.current < odai_list.length - 1 && !gameOvered()) {
         setOdaiIndex(odai_index_ref.current + 1);
       } else {
         setGameOver()
@@ -148,19 +154,36 @@ const Battle = () => {
 
   const drainHp = (drain_hp_value) => {
     dispatch({ type : 'drainHp' ,drain_hp_value: drain_hp_value})
-    if(state.user.hp >= 1) {
-      const new_messages = [...messages_ref.current, name_ref.current + 'は' + drain_hp_value + 'ダメージを受けた'] 
+    if(user_ref.current.hp >= 1) {
+      const new_messages = [...messages_ref.current, user_ref.current.name + 'は' + drain_hp_value + 'ダメージを受けた'] 
       setMessages(new_messages)
     } else {
-      const new_messages = [...messages_ref.current, name_ref.current + "はやられてしまった"] 
+      const new_messages = [...messages_ref.current, user_ref.current.name + "はやられてしまった"] 
       setMessages(new_messages)
     }
+  }
+
+  const inBattle = () => {
+    return battle_status_ref === IN_BATTLE
+  }
+  const cleard = () => {
+    return battle_status_ref === CLEARED
+  }
+  
+  const gameOvered = () => {
+    return battle_status_ref === GAME_OVER
+  }
+  const setGameOver = () => {
+    if(!cleard()) {
+      dispatch({ type : 'setBattleStatus' , battle_status: GAME_OVER})
+    }
+    return
   }
 
   return (
     <section id="battle">
       <div id="status">
-        { renderStatus(state.user.hp,state.user.name) }
+        { renderStatus() }
       </div>
       <div id="not-status">
         <div id="area"> 
