@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef,useContext } from "react";
 import Announce from "../../components/battle/announce"
+import { Modal } from "../../components/common"
 import { odai_list } from "../../utils/odai_list";
 import { renderImage } from "../../components/common"
 import { renderBar } from "../../components/render-bar"
@@ -48,19 +49,21 @@ const Battle = () => {
 
   useEffect(() => {
     document.addEventListener("keydown", handleTyping, false);
-    dispatch({ type : 'setName' , name: "アヤノ"})
-    dispatch({ type : 'setBattleStatus' , battle_status: IN_BATTLE})
+    dispatch({ type : 'setName' , name: "りょうた"})
   }, []);
   
   useEffect(() => {
+    if(notInBattle()) return
     setOdai(odai_list[odai_index_ref.current]);
     setInValidText(odai_list[odai_index_ref.current].roma_contents[0]);
     setValidText([]);
     if(count_ref.current >= 100) drainHp(20)
     setCount(0)
+    
     const timer = setInterval(() => { countDown() },100)
+    if(result_ref.current === CLEARED) clearInterval(timer)
     return () => clearInterval(timer) 
-  }, [odai_index, result]);
+  }, [odai_index, result, state.battle_status]);
 
   useEffect(() => {
     if(user_ref.current.hp <= 0) {
@@ -69,7 +72,7 @@ const Battle = () => {
   }, [user_ref.current.hp]);
 
   const handleTyping = (e) => {
-    if (checkPushedKey(e.key) || cleard() || gameOvered()) return
+    if (checkPushedKey(e) || cleared() || gameOvered()) return
     const usable_roma_str = checkValidInput([...valid_text_ref.current, e.key].join(""))
     if (usable_roma_str) {
       setInValidKey(false);
@@ -87,12 +90,13 @@ const Battle = () => {
   };
 
   const nextOdai = () => {
-    if (odai_index_ref.current < odai_list.length - 1) {
+    if (cleared() || gameOvered()) return
+    if (odai_index_ref.current <= odai_list.length - 2) {
       setInValidKey(false);
       setOdaiIndex(odai_index_ref.current + 1);
     } else {
       setInValidKey(false);
-      setResult(CLEARED);
+      setCleared()
     }
   };
 
@@ -121,8 +125,12 @@ const Battle = () => {
     return content
   }
 
-  const checkPushedKey = (key) => {
-    if (key !== "Shift" && key !== "Meta") {
+  const checkPushedKey = (e) => {
+    if (e.code === "Space" && notInBattle()) {
+      setGameStart()
+      return true
+    } 
+    if (e.key !== "Shift" && e.key !== "Meta") {
       return  false
     } else {
       return true
@@ -130,13 +138,13 @@ const Battle = () => {
   }
 
   const countDown = () => {
-    console.log(inBattle())
+    if(cleared()) return
     if(count_ref.current  < 100 && inBattle()) {
       setCount(count_ref.current + 1)
     } else {
       setInValidKey(false);
       if(count_ref.current === 100 && odai_index_ref.current < odai_list.length - 1 && !gameOvered()) {
-        setOdaiIndex(odai_index_ref.current + 1);
+        nextOdai()
       } else {
         setGameOver()
       }
@@ -145,10 +153,12 @@ const Battle = () => {
 
 
   const renderGameStatus = () => {
-    if(cleard() && !invalid_key){
+    if(cleared() && !invalid_key){
       return  <div id="clear">クリアー！！🙌</div>
     }else if(gameOvered() && !invalid_key) {
       return  <div id="game-over">GAME OVER</div>
+    } else {
+      return ""
     }
   }
 
@@ -160,28 +170,49 @@ const Battle = () => {
     } else {
       const new_messages = [...messages_ref.current, user_ref.current.name + "はやられてしまった"] 
       setMessages(new_messages)
+      setGameOver()
     }
   }
 
   const inBattle = () => {
-    return battle_status_ref === IN_BATTLE
+    return battle_status_ref.current === IN_BATTLE
   }
-  const cleard = () => {
-    return battle_status_ref === CLEARED
+  const cleared = () => {
+    return battle_status_ref.current === CLEARED
   }
   
   const gameOvered = () => {
-    return battle_status_ref === GAME_OVER
+    return battle_status_ref.current === GAME_OVER
   }
-  const setGameOver = () => {
-    if(!cleard()) {
-      dispatch({ type : 'setBattleStatus' , battle_status: GAME_OVER})
+  const notInBattle = () => {
+    return battle_status_ref.current === NOT_IN_BATTLE
+  }
+  const setCleared = () => {
+    if(!gameOvered()) {
+      dispatch({ type : 'setBattleStatus' , battle_status: CLEARED})
     }
     return
   }
 
+  const setGameOver = () => {
+    if(!cleared()) {
+      dispatch({ type : 'setBattleStatus' , battle_status: GAME_OVER})
+    }
+    return
+  }
+  const setGameStart = () => {
+    dispatch({ type : 'setBattleStatus' , battle_status: IN_BATTLE})
+  }
+
   return (
     <section id="battle">
+      {notInBattle() && 
+        <Modal>
+        <div id="start-modal">
+          スペースキーでスタート
+        </div>
+      </Modal>
+      }
       <div id="status">
         { renderStatus() }
       </div>
