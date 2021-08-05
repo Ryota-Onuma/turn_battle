@@ -190,6 +190,8 @@ const Battle = () => {
   const setCleared = () => {
     if(!gameOvered()) {
       dispatch({ type : 'setBattleStatus' , battle_status: CLEARED})
+      const new_messages = [...messages_ref.current, "カワウソを倒した！"] 
+      setMessages(new_messages)
     }
     return
   }
@@ -230,11 +232,11 @@ const Battle = () => {
               <div id="invalid-key">{invalid_key && inBattle() ? "間違ったキーを押してるだぬ" : ""}</div>
             </div>
           </div>
-          <div id="odai">{odai.full_content}</div>
-          <div id="condition">
-            <span id="valid">{valid_text}</span>
-            <span id="invalid">{invalid_text}</span>
-          </div>
+          <div id="odai" style={{visibility: inBattle() ? "visible" : "hidden"}}>{odai.full_content}</div>
+            <div id="condition" style={{visibility: inBattle() ? "visible" : "hidden"}}>
+              <span id="valid">{valid_text}</span>
+              <span id="invalid">{invalid_text}</span>
+            </div>
         </div>
         <div id="announce-container">
           <Announce messages={messages_ref.current} />
